@@ -1,3 +1,517 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aplikasi Slip Gaji Guru & Pegawai</title>
+
+<!-- Font Poppins dari Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --blue-light:#BFE0F5;
+    --blue-mid:#8FC3E6;
+    --blue-dark:#1F5C8B;
+    --blue-darker:#154867;
+    --ink:#1B2126;
+    --muted:#5B6773;
+    --paper:#ffffff;
+    --bg:#EEF3F7;
+    --border:#D8E1E8;
+    --border-strong:#111111;
+    --danger:#C0442F;
+    --radius:10px;
+    font-family: 'Poppins', Arial, Roboto, "Helvetica Neue", sans-serif;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);}
+  body{min-height:100vh;}
+  button{font-family:inherit;cursor:pointer;}
+  input,select{font-family:inherit;}
+
+  #app{display:flex;min-height:100vh;}
+
+  /* Sidebar */
+  .sidebar{
+    width:230px;flex-shrink:0;background:var(--blue-darker);color:#fff;
+    display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto;
+  }
+  .sidebar-brand{padding:22px 20px 16px;border-bottom:1px solid rgba(255,255,255,0.12);}
+  .sidebar-brand .mark{width:34px;height:34px;border-radius:8px;background:var(--blue-light);color:var(--blue-darker);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px;margin-bottom:10px;}
+  .sidebar-brand h1{font-size:15px;line-height:1.3;margin:0;font-weight:700;}
+  .sidebar-brand p{font-size:11.5px;color:#B9D3E4;margin:4px 0 0;}
+  .nav{list-style:none;margin:0;padding:10px;flex:1;}
+  .nav li{margin-bottom:2px;}
+  .nav button{
+    width:100%;text-align:left;background:none;border:none;color:#D9E9F4;
+    padding:10px 12px;border-radius:8px;font-size:13.5px;display:flex;align-items:center;gap:10px;
+    transition:background .15s ease;
+  }
+  .nav button .ic{width:18px;text-align:center;font-size:14px;}
+  .nav button:hover{background:rgba(255,255,255,0.08);}
+  .nav button.active{background:var(--blue-light);color:var(--blue-darker);font-weight:700;}
+  .sidebar-foot{padding:14px 20px;font-size:11px;color:#8FB4CC;border-top:1px solid rgba(255,255,255,0.12);}
+
+  /* Main */
+  .main{flex:1;min-width:0;padding:26px 30px 60px;}
+  .page-head{margin-bottom:20px;}
+  .page-head h2{margin:0 0 4px;font-size:21px;}
+  .page-head p{margin:0;color:var(--muted);font-size:13.5px;}
+
+  .card{background:var(--paper);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:18px;}
+  .card h3{margin:0 0 14px;font-size:14.5px;color:var(--blue-darker);}
+
+  .grid{display:grid;gap:14px;}
+  .grid.cols-2{grid-template-columns:1fr 1fr;}
+  .grid.cols-3{grid-template-columns:1fr 1fr 1fr;}
+  .grid.cols-4{grid-template-columns:repeat(4,1fr);}
+  @media(max-width:900px){.grid.cols-2,.grid.cols-3,.grid.cols-4{grid-template-columns:1fr;}}
+
+  .field{display:flex;flex-direction:column;gap:5px;}
+  .field label{font-size:12.5px;font-weight:600;color:var(--muted);}
+  .field input,.field select,.field textarea{
+    padding:9px 10px;border:1px solid var(--border);border-radius:7px;font-size:13.5px;color:var(--ink);background:#fff;
+  }
+  .field input:focus,.field select:focus,.field textarea:focus{outline:2px solid var(--blue-mid);outline-offset:0;border-color:var(--blue-mid);}
+  .field small{color:var(--muted);font-size:11px;}
+
+  .btn{display:inline-flex;align-items:center;gap:7px;padding:9px 16px;border-radius:8px;border:1px solid transparent;font-size:13px;font-weight:600;}
+  .btn-primary{background:var(--blue-dark);color:#fff;}
+  .btn-primary:hover{background:var(--blue-darker);}
+  .btn-secondary{background:#fff;border-color:var(--border);color:var(--ink);}
+  .btn-secondary:hover{background:#F3F7FA;}
+  .btn-danger{background:#fff;border-color:#EFC7BC;color:var(--danger);}
+  .btn-danger:hover{background:#FCEEEA;}
+  .btn-sm{padding:6px 10px;font-size:12px;border-radius:6px;}
+  .btn:disabled{opacity:.5;cursor:not-allowed;}
+
+  table.data{width:100%;border-collapse:collapse;font-size:13px;}
+  table.data th{text-align:left;font-size:11.5px;text-transform:uppercase;letter-spacing:.03em;color:var(--muted);padding:9px 10px;border-bottom:2px solid var(--border);}
+  table.data td{padding:10px;border-bottom:1px solid var(--border);vertical-align:middle;}
+  table.data tr:last-child td{border-bottom:none;}
+  .empty-row td{text-align:center;color:var(--muted);padding:26px;}
+
+  .badge{display:inline-block;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600;background:var(--blue-light);color:var(--blue-darker);}
+  .row-actions{display:flex;gap:6px;}
+
+  .stat-cards{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px;}
+  @media(max-width:900px){.stat-cards{grid-template-columns:1fr 1fr;}}
+  .stat-card{background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;}
+  .stat-card .num{font-size:24px;font-weight:700;color:var(--blue-darker);}
+  .stat-card .lbl{font-size:12px;color:var(--muted);margin-top:2px;}
+
+  .logo-box{width:76px;height:76px;border:1px dashed var(--border);border-radius:8px;display:flex;align-items:center;justify-content:center;overflow:hidden;background:#F8FAFB;flex-shrink:0;}
+  .logo-box img{max-width:100%;max-height:100%;object-fit:contain;}
+  .logo-upload{display:flex;align-items:center;gap:14px;}
+
+  .comp-table{width:100%;border-collapse:collapse;margin-top:8px;}
+  .comp-table th{font-size:11px;text-transform:uppercase;color:var(--muted);text-align:left;padding:6px 8px;}
+  .comp-table td{padding:5px 6px;}
+  .comp-table input{width:100%;padding:7px 8px;border:1px solid var(--border);border-radius:6px;font-size:13px;}
+  .comp-table .col-jumlah{width:150px;}
+  .comp-table .col-del{width:34px;}
+  .icon-btn{background:none;border:none;color:var(--danger);font-size:15px;padding:4px 6px;border-radius:6px;}
+  .icon-btn:hover{background:#FCEEEA;}
+  .add-row-btn{margin-top:6px;font-size:12.5px;color:var(--blue-dark);background:none;border:none;font-weight:600;padding:4px 2px;}
+  .add-row-btn:hover{text-decoration:underline;}
+  .section-title{font-size:13px;font-weight:700;margin:18px 0 4px;color:var(--ink);}
+  .section-title:first-child{margin-top:0;}
+
+  .split{display:grid;grid-template-columns:1fr 460px;gap:22px;align-items:start;}
+  @media(max-width:1150px){.split{grid-template-columns:1fr;}}
+  .preview-wrap{position:sticky;top:20px;}
+
+  .toast{position:fixed;bottom:22px;right:22px;background:var(--ink);color:#fff;padding:11px 18px;border-radius:8px;font-size:13px;box-shadow:0 6px 18px rgba(0,0,0,.18);opacity:0;transform:translateY(8px);transition:all .25s ease;pointer-events:none;z-index:999;}
+  .toast.show{opacity:1;transform:translateY(0);}
+
+  .modal-overlay{position:fixed;inset:0;background:rgba(20,30,38,.45);display:flex;align-items:center;justify-content:center;z-index:500;padding:20px;}
+  .modal{background:#fff;border-radius:12px;max-width:640px;width:100%;max-height:90vh;overflow-y:auto;padding:24px;}
+  .modal h3{margin-top:0;}
+  .modal-close{position:sticky;float:right;top:0;background:none;border:none;font-size:18px;color:var(--muted);}
+
+  /* ===== SLIP PREVIEW (matches printed document) ===== */
+  #slipPreview{
+    background:#fff;border:1px solid var(--border-strong);padding:20px;
+    font-size:12px;color:#111;width:100%;
+  }
+  .slip-header{display:grid;grid-template-columns:70px 1fr 70px;align-items:center;gap:10px;border-bottom:2px solid #111;padding-bottom:10px;margin-bottom:10px;}
+  .slip-logo{width:70px;height:70px;display:flex;align-items:center;justify-content:center;}
+  .slip-logo img{max-width:100%;max-height:100%;object-fit:contain;}
+  .slip-title{text-align:center;}
+  .slip-title .t1{font-size:14px;font-weight:700;letter-spacing:.02em;margin-bottom:3px;}
+  .slip-title .t2{font-size:14.5px;font-weight:800;text-transform:uppercase;}
+  .slip-title .t3{font-size:13px;font-weight:800;text-transform:uppercase;}
+  .slip-title .t4{font-size:10px;margin-top:4px;}
+  .slip-title .t5{font-size:10px;}
+
+  .slip-idbox{background:var(--blue-light);border:1px solid #111;display:grid;grid-template-columns:1fr 1fr;gap:2px 14px;padding:9px 12px;margin-bottom:14px;font-size:11.5px;}
+  .slip-idbox div{display:flex;gap:6px;}
+  .slip-idbox .k{width:70px;flex-shrink:0;}
+
+  .slip-section-title{font-weight:700;font-size:12px;margin:12px 0 4px;}
+  table.slip-comp{width:100%;border-collapse:collapse;border:1px solid #111;margin-bottom:2px;}
+  table.slip-comp th{border:1px solid #111;padding:5px 8px;font-size:10.5px;text-align:left;background:#F5F8FA;}
+  table.slip-comp td{border:1px solid #111;padding:5px 8px;font-size:11.5px;}
+  table.slip-comp td.jml{text-align:right;white-space:nowrap;}
+
+  .slip-total-row{display:flex;justify-content:flex-end;margin-top:8px;}
+  .slip-total-row .box{background:var(--blue-light);border:1px solid #111;display:flex;gap:24px;padding:8px 16px;font-weight:800;font-size:13px;}
+
+  .slip-sign{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:26px;font-size:11.5px;}
+  .slip-sign .place-date{grid-column:1 / -1;margin-bottom:4px;}
+  .slip-sign .role{margin-bottom:44px;}
+  .slip-sign .stamp{height:54px;position:relative;}
+  .slip-sign .stamp img.stempel{position:absolute;left:0;top:0;max-height:54px;opacity:.88;}
+  .slip-sign .stamp img.ttd{position:absolute;left:16px;top:6px;max-height:42px;}
+  .slip-sign .name{font-weight:700;text-decoration:underline;}
+
+  .sigpad-box{border:1px solid var(--border);border-radius:8px;padding:10px;background:#F8FAFB;}
+  .sigpad-box canvas{background:#fff;border:1px dashed var(--border);border-radius:6px;touch-action:none;width:100%;max-width:260px;height:100px;display:block;}
+  .sigpad-actions{display:flex;gap:8px;margin-top:8px;}
+  .ttd-tabs{display:flex;gap:6px;margin-bottom:10px;}
+  .ttd-tab{padding:6px 12px;border-radius:6px;border:1px solid var(--border);background:#fff;font-size:12px;font-weight:600;color:var(--muted);}
+  .ttd-tab.active{background:var(--blue-light);color:var(--blue-darker);border-color:var(--blue-mid);}
+
+  @media print{
+    body *{visibility:hidden;}
+    #printArea, #printArea *{visibility:visible;}
+    #printArea{position:absolute;top:0;left:0;width:210mm;padding:10mm;}
+    #slipPreview{border:none;}
+    @page{size:A4 portrait;margin:0;}
+  }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="toast" class="toast"></div>
+
+<script>
+/* ============ CONSTANTS ============ */
+const BULAN = ["Januari","Februari","Maret","April","Mei","Juni","Juli","Agustus","September","Oktober","November","Desember"];
+const STATUS_OPTIONS = ["Guru Tetap","Guru Tidak Tetap","Pegawai Tetap","Pegawai Tidak Tetap","Lainnya"];
+
+function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
+function formatRupiah(n){ n = Math.round(Number(n)||0); return "Rp" + n.toLocaleString('id-ID'); }
+function todayIndo(){
+  const d = new Date();
+  return d.getDate()+" "+BULAN[d.getMonth()]+" "+d.getFullYear();
+}
+function escapeHtml(s){
+  return (s===undefined||s===null?"":String(s)).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function defaultSettings(){
+  return {
+    yayasan:{
+      logoAplikasi:"", logoKiri:"", logoKanan:"",
+      namaYayasan:"YAYASAN IBNU ABBAS ASSHAHABIY",
+      namaSekolah:"SDTQ IBRAHIM AN-NAKHAI",
+      nomorSK:"AHU-0005484.AH.01.04.Tahun 2024",
+      nomorAHU:"AHU-0008280.AH.01.12.Tahun 2024",
+      tanggalSK:"04 April 2024",
+      alamat:"Jl. Sekolah Desa Kubang Jaya, Kel. Kubang Jaya, Kec. Siak Hulu, Kab. Kampar",
+      rtRw:"RT001/RW003",
+      telp:"0851 8246 7943",
+      email:""
+    },
+    signature:{
+      tempat:"Kampar",
+      ketuaNama:"Mochamad Nasrul Maulana, S.Pd",
+      ketuaLabel:"Ketua Yayasan",
+      ketuaStempel:"",
+      ketuaTtd:"",
+      kepsekNama:"Tirto Adhiatma Syahid, S.Si",
+      kepsekLabel:"Kepala Sekolah",
+      kepsekStempel:"",
+      kepsekTtd:""
+    }
+  };
+}
+function seedPegawai(){
+  return [{
+    id:uid(), nama:"Karmila, S.Pd", nik:"", jabatan:"Guru Mapel Umum",
+    mapel:"", hp:"", alamat:"", status:"Guru Tidak Tetap"
+  }];
+}
+function defaultComponents(){
+  return {
+    gajiDasar:[
+      {id:uid(), nama:"Gaji Pokok", ket:"", jumlah:0},
+      {id:uid(), nama:"Tunjangan Guru Tetap", ket:"", jumlah:0}
+    ],
+    tunjangan:[
+      {id:uid(), nama:"Tunjangan Kesehatan", ket:"", jumlah:0},
+      {id:uid(), nama:"Tunjangan Guru Mata Pelajaran", ket:"", jumlah:0}
+    ],
+    honor:[
+      {id:uid(), nama:"Inval", ket:"", jumlah:0},
+      {id:uid(), nama:"Kehadiran", ket:"", jumlah:0},
+      {id:uid(), nama:"Kedisiplinan", ket:"", jumlah:0}
+    ],
+    potongan:[
+      {id:uid(), nama:"Jam Mengajar Digantikan", ket:"", jumlah:0}
+    ]
+  };
+}
+
+/* ============ STATE ============ */
+const state = {
+  page:'dashboard',
+  loaded:false,
+  settings:null,
+  pegawai:[],
+  slips:[],
+  draft:null,
+  editingPegawaiId:null,
+  viewingSlipId:null,
+  showImportModal:false
+};
+
+/* ============ STORAGE ============ */
+async function loadAll(){
+  try{ const r = await window.storage.get('settings', true); state.settings = r? JSON.parse(r.value) : defaultSettings(); }
+  catch(e){ state.settings = defaultSettings(); }
+  try{ const r = await window.storage.get('pegawai', true); state.pegawai = r? JSON.parse(r.value) : seedPegawai(); }
+  catch(e){ state.pegawai = seedPegawai(); }
+  try{ const r = await window.storage.get('slips', true); state.slips = r? JSON.parse(r.value) : []; }
+  catch(e){ state.slips = []; }
+  state.loaded = true;
+}
+async function saveSettings(){ try{ await window.storage.set('settings', JSON.stringify(state.settings), true); }catch(e){ showToast('Gagal menyimpan pengaturan'); } }
+async function savePegawai(){ try{ await window.storage.set('pegawai', JSON.stringify(state.pegawai), true); }catch(e){ showToast('Gagal menyimpan data pegawai'); } }
+async function saveSlips(){ try{ await window.storage.set('slips', JSON.stringify(state.slips), true); }catch(e){ showToast('Gagal menyimpan slip'); } }
+
+function showToast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(window.__toastTimer);
+  window.__toastTimer = setTimeout(()=>t.classList.remove('show'), 2200);
+}
+
+/* ============ NAV ============ */
+const NAV_ITEMS = [
+  {key:'dashboard', label:'Dashboard', icon:'&#9635;'},
+  {key:'pegawai', label:'Data Guru/Pegawai', icon:'&#128101;'},
+  {key:'buatslip', label:'Buat Slip Gaji', icon:'&#128196;'},
+  {key:'riwayat', label:'Riwayat Slip Gaji', icon:'&#128337;'},
+  {key:'yayasan', label:'Pengaturan Yayasan', icon:'&#127963;'},
+  {key:'ttd', label:'Pengaturan Tanda Tangan', icon:'&#9997;'}
+];
+
+function goTo(page){
+  state.page = page;
+  if(page==='buatslip' && !state.draft) initDraft();
+  renderApp();
+}
+
+function initDraft(){
+  const now = new Date();
+  state.draft = {
+    id:null,
+    bulan: BULAN[now.getMonth()],
+    tahun: now.getFullYear(),
+    pegawaiId:"",
+    namaGuru:"",
+    jabatan:"",
+    status:"",
+    ...defaultComponents(),
+    tempat: state.settings.signature.tempat || "Kampar",
+    tanggal: todayIndo()
+  };
+}
+
+/* ============ RENDER SHELL ============ */
+function renderApp(){
+  const app = document.getElementById('app');
+  if(!state.loaded){
+    app.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;width:100%;color:#5B6773;font-size:14px;">Memuat aplikasi...</div>';
+    return;
+  }
+  app.innerHTML = `
+    <div class="sidebar">
+      <div class="sidebar-brand">
+        <div class="mark" style="background:transparent; padding:0;">
+          ${state.settings.yayasan.logoAplikasi 
+            ? `<img src="${state.settings.yayasan.logoAplikasi}" style="width:100%; height:100%; object-fit:contain; border-radius:8px;">` 
+            : `<div style="width:100%;height:100%;background:var(--blue-light);display:flex;align-items:center;justify-content:center;border-radius:8px;color:var(--blue-darker);font-weight:700;">SG</div>`
+          }
+        </div>
+        <h1>Slip Gaji Guru &amp; Pegawai</h1>
+        <p>${escapeHtml(state.settings.yayasan.namaSekolah || 'Sekolah')}</p>
+      </div>
+      <ul class="nav">
+        ${NAV_ITEMS.map(item=>`
+          <li><button class="${state.page===item.key?'active':''}" onclick="goTo('${item.key}')">
+            <span class="ic">${item.icon}</span> ${item.label}
+          </button></li>
+        `).join('')}
+      </ul>
+      <div class="sidebar-foot">Data bersama — perubahan terlihat oleh semua pengguna link ini.</div>
+    </div>
+    <div class="main" id="mainArea"></div>
+  `;
+  renderPage();
+}
+
+function renderPage(){
+  const el = document.getElementById('mainArea');
+  if(state.page==='dashboard') el.innerHTML = pageDashboard();
+  else if(state.page==='pegawai') el.innerHTML = pagePegawai();
+  else if(state.page==='buatslip') el.innerHTML = pageBuatSlip();
+  else if(state.page==='riwayat') el.innerHTML = pageRiwayat();
+  else if(state.page==='yayasan') el.innerHTML = pageYayasan();
+  else if(state.page==='ttd') el.innerHTML = pageTtd();
+
+  if(state.page==='buatslip'){ updatePreview(); }
+  if(state.page==='ttd'){ initSignaturePads(); }
+}
+
+/* ============ DASHBOARD ============ */
+function pageDashboard(){
+  const bulanIni = BULAN[new Date().getMonth()];
+  const tahunIni = new Date().getFullYear();
+  const slipBulanIni = state.slips.filter(s=>s.bulan===bulanIni && s.tahun===tahunIni).length;
+  const totalTersalur = state.slips
+    .filter(s=>s.bulan===bulanIni && s.tahun===tahunIni)
+    .reduce((sum,s)=>sum+s.total,0);
+  const lastSlip = state.slips[state.slips.length-1];
+
+  return `
+    <div class="page-head">
+      <h2>Dashboard</h2>
+      <p>Ringkasan slip gaji ${escapeHtml(state.settings.yayasan.namaSekolah||'')}</p>
+    </div>
+    <div class="stat-cards">
+      <div class="stat-card"><div class="num">${state.pegawai.length}</div><div class="lbl">Guru / Pegawai terdaftar</div></div>
+      <div class="stat-card"><div class="num">${slipBulanIni}</div><div class="lbl">Slip dibuat bulan ${bulanIni}</div></div>
+      <div class="stat-card"><div class="num">${formatRupiah(totalTersalur)}</div><div class="lbl">Total gaji bulan ${bulanIni}</div></div>
+      <div class="stat-card"><div class="num">${state.slips.length}</div><div class="lbl">Total slip tersimpan</div></div>
+    </div>
+    <div class="card">
+      <h3>Aksi cepat</h3>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <button class="btn btn-primary" onclick="goTo('buatslip')">+ Buat Slip Gaji</button>
+        <button class="btn btn-secondary" onclick="goTo('pegawai')">Kelola Data Guru/Pegawai</button>
+        <button class="btn btn-secondary" onclick="goTo('yayasan')">Pengaturan Yayasan</button>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Slip terakhir dibuat</h3>
+      ${lastSlip ? `
+        <table class="data">
+          <tr><td style="width:130px;color:var(--muted);">Periode</td><td>${lastSlip.bulan} ${lastSlip.tahun}</td></tr>
+          <tr><td style="color:var(--muted);">Nama</td><td>${escapeHtml(lastSlip.namaGuru)}</td></tr>
+          <tr><td style="color:var(--muted);">Jabatan</td><td>${escapeHtml(lastSlip.jabatan)}</td></tr>
+          <tr><td style="color:var(--muted);">Total Gaji</td><td><strong>${formatRupiah(lastSlip.total)}</strong></td></tr>
+        </table>
+      ` : `<p style="color:var(--muted);font-size:13.5px;">Belum ada slip gaji dibuat.</p>`}
+    </div>
+  `;
+}
+
+/* ============ DATA PEGAWAI ============ */
+function pagePegawai(){
+  const editing = state.pegawai.find(p=>p.id===state.editingPegawaiId);
+  return `
+    <div class="page-head">
+      <h2>Data Guru / Pegawai</h2>
+      <p>Kelola data induk guru dan pegawai yang akan digunakan saat membuat slip gaji.</p>
+    </div>
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:10px;">
+        <h3 style="margin:0;">Daftar Guru / Pegawai (${state.pegawai.length})</h3>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-secondary btn-sm" onclick="openImportModal()">📥 Import G-Sheets</button>
+          <button class="btn btn-primary btn-sm" onclick="openPegawaiForm(null)">+ Tambah Data</button>
+        </div>
+      </div>
+      <table class="data">
+        <thead><tr><th>Nama</th><th>Jabatan</th><th>Status</th><th>No. HP</th><th></th></tr></thead>
+        <tbody>
+          ${state.pegawai.length===0 ? `<tr class="empty-row"><td colspan="5">Belum ada data guru/pegawai.</td></tr>` :
+            state.pegawai.map(p=>`
+              <tr>
+                <td><strong>${escapeHtml(p.nama)}</strong>${p.nik?`<div style="color:var(--muted);font-size:11.5px;">${escapeHtml(p.nik)}</div>`:''}</td>
+                <td>${escapeHtml(p.jabatan)}</td>
+                <td><span class="badge">${escapeHtml(p.status)}</span></td>
+                <td>${escapeHtml(p.hp)||'-'}</td>
+                <td class="row-actions">
+                  <button class="btn btn-secondary btn-sm" onclick="openPegawaiForm('${p.id}')">Edit</button>
+                  <button class="btn btn-danger btn-sm" onclick="deletePegawai('${p.id}')">Hapus</button>
+                </td>
+              </tr>
+            `).join('')}
+        </tbody>
+      </table>
+    </div>
+    ${state.showPegawaiModal ? pegawaiModal(editing) : ''}
+    ${state.showImportModal ? importModal() : ''}
+  `;
+}
+
+function pegawaiModal(editing){
+  const p = editing || {nama:'',nik:'',jabatan:'',mapel:'',hp:'',alamat:'',status:STATUS_OPTIONS[0]};
+  return `
+  <div class="modal-overlay" onclick="if(event.target===this) closePegawaiForm()">
+    <div class="modal">
+      <button class="modal-close" onclick="closePegawaiForm()">&times;</button>
+      <h3>${editing?'Edit':'Tambah'} Data Guru/Pegawai</h3>
+      <div class="grid cols-2">
+        <div class="field"><label>Nama Guru/Pegawai</label><input id="f_nama" value="${escapeHtml(p.nama)}" placeholder="Contoh: Karmila, S.Pd"></div>
+        <div class="field"><label>NIK / NIP (opsional)</label><input id="f_nik" value="${escapeHtml(p.nik)}"></div>
+        <div class="field"><label>Jabatan</label><input id="f_jabatan" value="${escapeHtml(p.jabatan)}" placeholder="Contoh: Guru Mapel Umum"></div>
+        <div class="field"><label>Status Kepegawaian</label>
+          <select id="f_status">
+            ${STATUS_OPTIONS.map(s=>`<option ${p.status===s?'selected':''}>${s}</option>`).join('')}
+          </select>
+        </div>
+        <div class="field"><label>Mata Pelajaran (opsional)</label><input id="f_mapel" value="${escapeHtml(p.mapel)}"></div>
+        <div class="field"><label>Nomor HP</label><input id="f_hp" value="${escapeHtml(p.hp)}"></div>
+      </div>
+      <div class="field" style="margin-top:14px;"><label>Alamat</label><textarea id="f_alamat" rows="2">${escapeHtml(p.alamat)}</textarea></div>
+      <div style="display:flex;gap:10px;margin-top:18px;justify-content:flex-end;">
+        <button class="btn btn-secondary" onclick="closePegawaiForm()">Batal</button>
+        <button class="btn btn-primary" onclick="savePegawaiForm('${editing?editing.id:''}')">Simpan</button>
+      </div>
+    </div>
+  </div>`;
+}
+function openPegawaiForm(id){ state.editingPegawaiId=id; state.showPegawaiModal=true; renderPage(); }
+function closePegawaiForm(){ state.showPegawaiModal=false; state.editingPegawaiId=null; renderPage(); }
+async function savePegawaiForm(existingId){
+  const data = {
+    nama: document.getElementById('f_nama').value.trim(),
+    nik: document.getElementById('f_nik').value.trim(),
+    jabatan: document.getElementById('f_jabatan').value.trim(),
+    status: document.getElementById('f_status').value,
+    mapel: document.getElementById('f_mapel').value.trim(),
+    hp: document.getElementById('f_hp').value.trim(),
+    alamat: document.getElementById('f_alamat').value.trim()
+  };
+  if(!data.nama){ showToast('Nama wajib diisi'); return; }
+  if(existingId){
+    const idx = state.pegawai.findIndex(p=>p.id===existingId);
+    state.pegawai[idx] = {...state.pegawai[idx], ...data};
+  } else {
+    state.pegawai.push({id:uid(), ...data});
+  }
+  await savePegawai();
+  state.showPegawaiModal=false; state.editingPegawaiId=null;
+  renderPage();
+  showToast('Data pegawai disimpan');
+}
+async function deletePegawai(id){
+  if(!confirm('Hapus data pegawai ini?')) return;
+  state.pegawai = state.pegawai.filter(p=>p.id!==id);
+  await savePegawai();
+  renderPage();
+  showToast('Data pegawai dihapus');
+}
+
 /* --- FITUR IMPORT GOOGLE SHEETS --- */
 function importModal(){
   return `
@@ -96,3 +610,511 @@ async function processImportSheets(){
     btn.innerHTML = 'Tarik Data'; btn.disabled = false;
   }
 }
+
+/* ============ BUAT SLIP GAJI ============ */
+function componentSection(title, key, rows){
+  return `
+    <div class="section-title">${title}</div>
+    <table class="comp-table">
+      <thead><tr><th>Komponen</th><th>Keterangan</th><th class="col-jumlah">Jumlah (Rp)</th><th class="col-del"></th></tr></thead>
+      <tbody>
+        ${rows.map(r=>`
+          <tr>
+            <td><input value="${escapeHtml(r.nama)}" oninput="updateComp('${key}','${r.id}','nama',this.value)"></td>
+            <td><input value="${escapeHtml(r.ket)}" oninput="updateComp('${key}','${r.id}','ket',this.value)" placeholder="cth: 10 x Rp50.000"></td>
+            <td class="col-jumlah"><input type="number" value="${r.jumlah}" oninput="updateComp('${key}','${r.id}','jumlah',this.value)"></td>
+            <td class="col-del"><button class="icon-btn" title="Hapus baris" onclick="removeComp('${key}','${r.id}')">&times;</button></td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+    <button class="add-row-btn" onclick="addComp('${key}')">+ Tambah komponen</button>
+  `;
+}
+
+function pageBuatSlip(){
+  if(!state.draft) initDraft();
+  const d = state.draft;
+  return `
+    <div class="page-head">
+      <h2>Buat Slip Gaji</h2>
+      <p>Isi data periode, komponen gaji, lalu simpan atau cetak slip.</p>
+    </div>
+    <div class="split">
+      <div>
+        <div class="card">
+          <h3>Periode & Identitas</h3>
+          <div class="grid cols-2">
+            <div class="field"><label>Bulan</label>
+              <select onchange="draftSet('bulan', this.value)">
+                ${BULAN.map(b=>`<option ${d.bulan===b?'selected':''}>${b}</option>`).join('')}
+              </select>
+            </div>
+            <div class="field"><label>Tahun</label><input type="number" value="${d.tahun}" oninput="draftSet('tahun', this.value)"></div>
+            <div class="field">
+              <label>Pilih Guru/Pegawai</label>
+              <select onchange="pickPegawai(this.value)">
+                <option value="">-- Pilih dari database --</option>
+                ${state.pegawai.map(p=>`<option value="${p.id}" ${d.pegawaiId===p.id?'selected':''}>${escapeHtml(p.nama)}</option>`).join('')}
+              </select>
+            </div>
+            <div class="field"><label>Nama Guru/Pegawai</label><input value="${escapeHtml(d.namaGuru)}" oninput="draftSet('namaGuru', this.value)"></div>
+            <div class="field"><label>Jabatan</label><input value="${escapeHtml(d.jabatan)}" oninput="draftSet('jabatan', this.value)"></div>
+            <div class="field"><label>Status</label>
+              <select onchange="draftSet('status', this.value)">
+                <option value="">-- pilih status --</option>
+                ${STATUS_OPTIONS.map(s=>`<option ${d.status===s?'selected':''}>${s}</option>`).join('')}
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h3>Komponen Gaji</h3>
+          ${componentSection('Gaji Dasar','gajiDasar', d.gajiDasar)}
+          ${componentSection('Tunjangan Tidak Tetap','tunjangan', d.tunjangan)}
+          ${componentSection('Honor Tambahan','honor', d.honor)}
+          ${componentSection('Potongan','potongan', d.potongan)}
+        </div>
+
+        <div class="card">
+          <h3>Tempat & Tanggal Slip</h3>
+          <div class="grid cols-2">
+            <div class="field"><label>Kota</label><input value="${escapeHtml(d.tempat)}" oninput="draftSet('tempat', this.value)"></div>
+            <div class="field"><label>Tanggal</label><input value="${escapeHtml(d.tanggal)}" oninput="draftSet('tanggal', this.value)"></div>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:10px;">
+          <button class="btn btn-primary" onclick="saveDraftAsSlip()">Simpan Slip Gaji</button>
+          <button class="btn btn-secondary" onclick="window.print()">Cetak / Simpan PDF</button>
+          <button class="btn btn-secondary" onclick="resetDraft()">Buat Baru</button>
+        </div>
+      </div>
+
+      <div class="preview-wrap">
+        <div class="card" style="padding:14px;">
+          <h3 style="margin-bottom:10px;">Preview Slip Gaji</h3>
+          <div id="printArea"><div id="slipPreview"></div></div>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function draftSet(field, value){
+  if(field==='tahun') value = parseInt(value)||new Date().getFullYear();
+  state.draft[field] = value;
+  updatePreview();
+}
+function pickPegawai(id){
+  state.draft.pegawaiId = id;
+  const p = state.pegawai.find(x=>x.id===id);
+  if(p){ state.draft.namaGuru = p.nama; state.draft.jabatan = p.jabatan; state.draft.status = p.status; }
+  renderPage();
+}
+function updateComp(key, id, field, value){
+  const row = state.draft[key].find(r=>r.id===id);
+  if(!row) return;
+  row[field] = field==='jumlah' ? (parseFloat(value)||0) : value;
+  updatePreview();
+}
+function addComp(key){
+  state.draft[key].push({id:uid(), nama:'', ket:'', jumlah:0});
+  renderPage();
+}
+function removeComp(key, id){
+  state.draft[key] = state.draft[key].filter(r=>r.id!==id);
+  renderPage();
+}
+function resetDraft(){
+  initDraft();
+  renderPage();
+  showToast('Form slip baru siap diisi');
+}
+
+function computeTotal(d){
+  const sum = arr => arr.reduce((s,r)=>s+(Number(r.jumlah)||0),0);
+  return sum(d.gajiDasar) + sum(d.tunjangan) + sum(d.honor) - sum(d.potongan);
+}
+
+function renderSlipHtml(d, settings){
+  const y = settings.yayasan, sig = settings.signature;
+  const compRows = (rows) => rows.map(r=>`
+    <tr>
+      <td>${escapeHtml(r.nama)||'&nbsp;'}</td>
+      <td>${escapeHtml(r.ket)}</td>
+      <td class="jml">${formatRupiah(r.jumlah)}</td>
+    </tr>
+  `).join('');
+  const compTable = (rows, withHeader) => `
+    <table class="slip-comp">
+      ${withHeader ? `<thead><tr><th>Komponen</th><th>Keterangan</th><th style="text-align:right;">Jumlah</th></tr></thead>` : ''}
+      <tbody>${compRows(rows)}</tbody>
+    </table>
+  `;
+  const total = computeTotal(d);
+
+  return `
+    <div class="slip-header">
+      <div class="slip-logo">${y.logoKiri?`<img src="${y.logoKiri}">`:''}</div>
+      <div class="slip-title">
+        <div class="t1">SLIP GAJI GURU DAN PEGAWAI</div>
+        <div class="t2">${escapeHtml(y.namaYayasan)}</div>
+        <div class="t3">${escapeHtml(y.namaSekolah)}</div>
+        <div class="t4">Nomor SK ${escapeHtml(y.nomorSK)}${y.nomorAHU?` &nbsp; No Daftar ${escapeHtml(y.nomorAHU)}`:''}${y.tanggalSK?` Tanggal ${escapeHtml(y.tanggalSK)}`:''}</div>
+        <div class="t5">${escapeHtml(y.alamat)}${y.rtRw?` &nbsp; ${escapeHtml(y.rtRw)}`:''}${y.telp?` No Telp/WA: ${escapeHtml(y.telp)}`:''}</div>
+      </div>
+      <div class="slip-logo">${y.logoKanan?`<img src="${y.logoKanan}">`:''}</div>
+    </div>
+
+    <div class="slip-idbox">
+      <div><span class="k">Bulan</span> : ${escapeHtml(d.bulan)} ${escapeHtml(d.tahun)}</div>
+      <div><span class="k">Jabatan</span> : ${escapeHtml(d.jabatan)}</div>
+      <div><span class="k">Nama Guru</span> : ${escapeHtml(d.namaGuru)}</div>
+      <div><span class="k">Status</span> : ${escapeHtml(d.status)}</div>
+    </div>
+
+    <div class="slip-section-title">Gaji Dasar</div>
+    ${compTable(d.gajiDasar, true)}
+
+    <div class="slip-section-title">Tunjangan Tidak Tetap</div>
+    ${compTable(d.tunjangan, false)}
+
+    <div class="slip-section-title">Honor Tambahan</div>
+    ${compTable(d.honor, false)}
+
+    <div class="slip-section-title">Potongan</div>
+    ${compTable(d.potongan, false)}
+
+    <div class="slip-total-row">
+      <div class="box"><span>TOTAL GAJI</span><span>${formatRupiah(total)}</span></div>
+    </div>
+
+    <div class="slip-sign">
+      <div class="place-date">${escapeHtml(d.tempat)}, ${escapeHtml(d.tanggal)}</div>
+      <div class="role">${escapeHtml(sig.ketuaLabel)}</div>
+      <div class="role">${escapeHtml(sig.kepsekLabel)}</div>
+      <div class="stamp">
+        ${sig.ketuaStempel?`<img class="stempel" src="${sig.ketuaStempel}">`:''}
+        ${sig.ketuaTtd?`<img class="ttd" src="${sig.ketuaTtd}">`:''}
+      </div>
+      <div class="stamp">
+        ${sig.kepsekStempel?`<img class="stempel" src="${sig.kepsekStempel}">`:''}
+        ${sig.kepsekTtd?`<img class="ttd" src="${sig.kepsekTtd}">`:''}
+      </div>
+      <div class="name">${escapeHtml(sig.ketuaNama)}</div>
+      <div class="name">${escapeHtml(sig.kepsekNama)}</div>
+    </div>
+  `;
+}
+
+function updatePreview(){
+  const el = document.getElementById('slipPreview');
+  if(!el) return;
+  el.innerHTML = renderSlipHtml(state.draft, state.settings);
+}
+
+async function saveDraftAsSlip(){
+  const d = state.draft;
+  if(!d.namaGuru){ showToast('Nama guru/pegawai wajib diisi'); return; }
+  const total = computeTotal(d);
+  const record = {...JSON.parse(JSON.stringify(d)), id: d.id || uid(), total, savedAt: new Date().toISOString()};
+  const idx = state.slips.findIndex(s=>s.id===record.id);
+  if(idx>=0) state.slips[idx] = record; else state.slips.push(record);
+  state.draft.id = record.id;
+  await saveSlips();
+  showToast('Slip gaji tersimpan ke Riwayat');
+  renderPage();
+}
+
+/* ============ RIWAYAT SLIP ============ */
+function pageRiwayat(){
+  const list = [...state.slips].sort((a,b)=> (b.savedAt||'').localeCompare(a.savedAt||''));
+  return `
+    <div class="page-head">
+      <h2>Riwayat Slip Gaji</h2>
+      <p>Semua slip gaji yang pernah disimpan.</p>
+    </div>
+    <div class="card">
+      <table class="data">
+        <thead><tr><th>Periode</th><th>Nama</th><th>Jabatan</th><th>Total Gaji</th><th></th></tr></thead>
+        <tbody>
+          ${list.length===0 ? `<tr class="empty-row"><td colspan="5">Belum ada riwayat slip gaji.</td></tr>` :
+            list.map(s=>`
+              <tr>
+                <td>${s.bulan} ${s.tahun}</td>
+                <td><strong>${escapeHtml(s.namaGuru)}</strong></td>
+                <td>${escapeHtml(s.jabatan)}</td>
+                <td>${formatRupiah(s.total)}</td>
+                <td class="row-actions">
+                  <button class="btn btn-secondary btn-sm" onclick="viewSlip('${s.id}')">Lihat / Cetak</button>
+                  <button class="btn btn-secondary btn-sm" onclick="editSlip('${s.id}')">Edit</button>
+                  <button class="btn btn-danger btn-sm" onclick="deleteSlip('${s.id}')">Hapus</button>
+                </td>
+              </tr>
+            `).join('')}
+        </tbody>
+      </table>
+    </div>
+    ${state.viewingSlipId ? viewSlipModal() : ''}
+  `;
+}
+function viewSlipModal(){
+  const s = state.slips.find(x=>x.id===state.viewingSlipId);
+  if(!s) return '';
+  return `
+  <div class="modal-overlay" onclick="if(event.target===this) closeViewSlip()">
+    <div class="modal" style="max-width:640px;">
+      <button class="modal-close" onclick="closeViewSlip()">&times;</button>
+      <div id="printArea"><div id="slipPreview">${renderSlipHtml(s, state.settings)}</div></div>
+      <div style="display:flex;gap:10px;margin-top:16px;justify-content:flex-end;">
+        <button class="btn btn-secondary" onclick="closeViewSlip()">Tutup</button>
+        <button class="btn btn-primary" onclick="window.print()">Cetak</button>
+      </div>
+    </div>
+  </div>`;
+}
+function viewSlip(id){ state.viewingSlipId=id; renderPage(); }
+function closeViewSlip(){ state.viewingSlipId=null; renderPage(); }
+function editSlip(id){
+  const s = state.slips.find(x=>x.id===id);
+  if(!s) return;
+  state.draft = JSON.parse(JSON.stringify(s));
+  goTo('buatslip');
+}
+async function deleteSlip(id){
+  if(!confirm('Hapus slip gaji ini dari riwayat?')) return;
+  state.slips = state.slips.filter(s=>s.id!==id);
+  await saveSlips();
+  renderPage();
+  showToast('Slip gaji dihapus');
+}
+
+/* ============ PENGATURAN YAYASAN ============ */
+function pageYayasan(){
+  const y = state.settings.yayasan;
+  return `
+    <div class="page-head">
+      <h2>Pengaturan Yayasan</h2>
+      <p>Data ini akan tampil di bagian kepala (header) setiap slip gaji.</p>
+    </div>
+    <div class="card">
+      <h3>Logo Aplikasi (Sidebar Kiri)</h3>
+      <div class="logo-upload">
+        <div class="logo-box">${y.logoAplikasi?`<img src="${y.logoAplikasi}">`:'Logo'}</div>
+        <div class="field" style="flex:1;">
+          <label>Pilih Logo Aplikasi</label>
+          <input type="file" accept="image/*" onchange="handleLogoUpload(event,'logoAplikasi')">
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Logo Untuk Cetak Slip</h3>
+      <div class="grid cols-2">
+        <div class="logo-upload">
+          <div class="logo-box">${y.logoKiri?`<img src="${y.logoKiri}">`:'Kiri'}</div>
+          <div class="field" style="flex:1;"><label>Logo Sebelah Kiri</label><input type="file" accept="image/*" onchange="handleLogoUpload(event,'logoKiri')"></div>
+        </div>
+        <div class="logo-upload">
+          <div class="logo-box">${y.logoKanan?`<img src="${y.logoKanan}">`:'Kanan'}</div>
+          <div class="field" style="flex:1;"><label>Logo Sebelah Kanan</label><input type="file" accept="image/*" onchange="handleLogoUpload(event,'logoKanan')"></div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Identitas Yayasan & Sekolah</h3>
+      <div class="grid cols-2">
+        <div class="field"><label>Nama Yayasan</label><input id="y_namaYayasan" value="${escapeHtml(y.namaYayasan)}"></div>
+        <div class="field"><label>Nama Sekolah</label><input id="y_namaSekolah" value="${escapeHtml(y.namaSekolah)}"></div>
+        <div class="field"><label>Nomor SK</label><input id="y_nomorSK" value="${escapeHtml(y.nomorSK)}"></div>
+        <div class="field"><label>Nomor AHU / No. Daftar</label><input id="y_nomorAHU" value="${escapeHtml(y.nomorAHU)}"></div>
+        <div class="field"><label>Tanggal SK/AHU</label><input id="y_tanggalSK" value="${escapeHtml(y.tanggalSK)}"></div>
+        <div class="field"><label>No. Telp/WhatsApp</label><input id="y_telp" value="${escapeHtml(y.telp)}"></div>
+        <div class="field"><label>RT/RW</label><input id="y_rtRw" value="${escapeHtml(y.rtRw)}"></div>
+        <div class="field"><label>Email (opsional)</label><input id="y_email" value="${escapeHtml(y.email)}"></div>
+      </div>
+      <div class="field" style="margin-top:14px;"><label>Alamat</label><textarea id="y_alamat" rows="2">${escapeHtml(y.alamat)}</textarea></div>
+      <div style="margin-top:16px;"><button class="btn btn-primary" onclick="saveYayasanForm()">Simpan Pengaturan</button></div>
+    </div>
+  `;
+}
+async function handleLogoUpload(event, field){
+  const file = event.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = async ()=>{
+    state.settings.yayasan[field] = reader.result;
+    await saveSettings();
+    renderApp();
+    showToast('Logo diperbarui');
+  };
+  reader.readAsDataURL(file);
+}
+async function saveYayasanForm(){
+  const y = state.settings.yayasan;
+  y.namaYayasan = document.getElementById('y_namaYayasan').value.trim();
+  y.namaSekolah = document.getElementById('y_namaSekolah').value.trim();
+  y.nomorSK = document.getElementById('y_nomorSK').value.trim();
+  y.nomorAHU = document.getElementById('y_nomorAHU').value.trim();
+  y.tanggalSK = document.getElementById('y_tanggalSK').value.trim();
+  y.telp = document.getElementById('y_telp').value.trim();
+  y.rtRw = document.getElementById('y_rtRw').value.trim();
+  y.email = document.getElementById('y_email').value.trim();
+  y.alamat = document.getElementById('y_alamat').value.trim();
+  await saveSettings();
+  showToast('Pengaturan yayasan disimpan');
+}
+
+/* ============ PENGATURAN TANDA TANGAN ============ */
+function signerBlock(who, label, nama, stempel, ttd, ttdMode){
+  const mode = ttdMode || 'upload';
+  return `
+    <div class="card">
+      <h3>${label}</h3>
+      <div class="field"><label>Label Jabatan</label><input id="s_${who}Label" value="${escapeHtml(label)}"></div>
+      <div class="field" style="margin-top:10px;"><label>Nama</label><input id="s_${who}Nama" value="${escapeHtml(nama)}"></div>
+
+      <div style="margin-top:16px;">
+        <label style="font-size:12.5px;font-weight:600;color:var(--muted);">Stempel</label>
+        <div class="logo-upload" style="margin-top:6px;">
+          <div class="logo-box">${stempel?`<img src="${stempel}">`:'Stempel'}</div>
+          <div class="field" style="flex:1;"><input type="file" accept="image/*" onchange="handleStempelUpload(event,'${who}Stempel')">
+            ${stempel?`<button class="btn btn-secondary btn-sm" style="margin-top:6px;width:fit-content;" onclick="clearImage('${who}Stempel')">Hapus stempel</button>`:''}
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top:18px;">
+        <label style="font-size:12.5px;font-weight:600;color:var(--muted);">Tanda Tangan Digital</label>
+        <div class="ttd-tabs" style="margin-top:6px;">
+          <button type="button" class="ttd-tab ${mode==='upload'?'active':''}" onclick="setTtdMode('${who}','upload')">Upload gambar</button>
+          <button type="button" class="ttd-tab ${mode==='draw'?'active':''}" onclick="setTtdMode('${who}','draw')">Gambar langsung</button>
+        </div>
+        ${mode==='upload' ? `
+          <div class="logo-upload">
+            <div class="logo-box">${ttd?`<img src="${ttd}">`:'TTD'}</div>
+            <div class="field" style="flex:1;"><input type="file" accept="image/*" onchange="handleStempelUpload(event,'${who}Ttd')">
+              ${ttd?`<button class="btn btn-secondary btn-sm" style="margin-top:6px;width:fit-content;" onclick="clearImage('${who}Ttd')">Hapus tanda tangan</button>`:''}
+            </div>
+          </div>
+        ` : `
+          <div class="sigpad-box">
+            ${ttd?`<div style="margin-bottom:8px;"><img src="${ttd}" style="max-height:60px;"></div>`:''}
+            <canvas id="pad_${who}" width="480" height="180"></canvas>
+            <div class="sigpad-actions">
+              <button class="btn btn-secondary btn-sm" onclick="clearPad('${who}')">Bersihkan</button>
+              <button class="btn btn-primary btn-sm" onclick="savePadAsTtd('${who}')">Simpan Tanda Tangan</button>
+            </div>
+            <small style="color:var(--muted);display:block;margin-top:6px;">Gambar dengan mouse atau jari di layar sentuh, lalu klik Simpan.</small>
+          </div>
+        `}
+      </div>
+    </div>
+  `;
+}
+
+function pageTtd(){
+  const s = state.settings.signature;
+  if(!state.ttdMode) state.ttdMode = {ketua:'upload', kepsek:'upload'};
+  return `
+    <div class="page-head">
+      <h2>Pengaturan Tanda Tangan</h2>
+      <p>Nama, stempel, dan tanda tangan digital ini akan tampil di bagian penutup slip gaji.</p>
+    </div>
+    <div class="card">
+      <h3>Kota untuk Tanggal Slip</h3>
+      <div class="field" style="max-width:300px;"><label>Kota</label><input id="s_tempat" value="${escapeHtml(s.tempat)}"></div>
+    </div>
+    <div class="grid cols-2">
+      ${signerBlock('ketua', s.ketuaLabel||'Ketua Yayasan', s.ketuaNama, s.ketuaStempel, s.ketuaTtd, state.ttdMode.ketua)}
+      ${signerBlock('kepsek', s.kepsekLabel||'Kepala Sekolah', s.kepsekNama, s.kepsekStempel, s.kepsekTtd, state.ttdMode.kepsek)}
+    </div>
+    <button class="btn btn-primary" onclick="saveTtdForm()">Simpan Pengaturan</button>
+  `;
+}
+function setTtdMode(who, mode){
+  if(!state.ttdMode) state.ttdMode = {ketua:'upload', kepsek:'upload'};
+  state.ttdMode[who] = mode;
+  renderPage();
+}
+async function clearImage(field){
+  state.settings.signature[field] = "";
+  await saveSettings();
+  renderPage();
+  showToast('Gambar dihapus');
+}
+function initSignaturePads(){
+  ['ketua','kepsek'].forEach(who=>{
+    const canvas = document.getElementById('pad_'+who);
+    if(!canvas) return;
+    const ctx = canvas.getContext('2d');
+    ctx.lineWidth = 3; ctx.lineCap = 'round'; ctx.lineJoin='round'; ctx.strokeStyle = '#111';
+    let drawing = false, last = null;
+    function pos(e){
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = canvas.width / rect.width, scaleY = canvas.height / rect.height;
+      const cx = e.touches ? e.touches[0].clientX : e.clientX;
+      const cy = e.touches ? e.touches[0].clientY : e.clientY;
+      return { x: (cx-rect.left)*scaleX, y: (cy-rect.top)*scaleY };
+    }
+    function start(e){ drawing = true; last = pos(e); e.preventDefault(); }
+    function move(e){
+      if(!drawing) return;
+      const p = pos(e);
+      ctx.beginPath(); ctx.moveTo(last.x, last.y); ctx.lineTo(p.x, p.y); ctx.stroke();
+      last = p; e.preventDefault();
+    }
+    function end(){ drawing = false; }
+    canvas.addEventListener('mousedown', start);
+    canvas.addEventListener('mousemove', move);
+    window.addEventListener('mouseup', end);
+    canvas.addEventListener('touchstart', start, {passive:false});
+    canvas.addEventListener('touchmove', move, {passive:false});
+    canvas.addEventListener('touchend', end);
+  });
+}
+function clearPad(who){
+  const canvas = document.getElementById('pad_'+who);
+  if(!canvas) return;
+  canvas.getContext('2d').clearRect(0,0,canvas.width,canvas.height);
+}
+async function savePadAsTtd(who){
+  const canvas = document.getElementById('pad_'+who);
+  if(!canvas) return;
+  state.settings.signature[who+'Ttd'] = canvas.toDataURL('image/png');
+  await saveSettings();
+  renderPage();
+  showToast('Tanda tangan disimpan');
+}
+async function handleStempelUpload(event, field){
+  const file = event.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = async ()=>{
+    state.settings.signature[field] = reader.result;
+    await saveSettings();
+    renderPage();
+    showToast('Gambar diperbarui');
+  };
+  reader.readAsDataURL(file);
+}
+async function saveTtdForm(){
+  const s = state.settings.signature;
+  s.tempat = document.getElementById('s_tempat').value.trim();
+  s.ketuaLabel = document.getElementById('s_ketuaLabel').value.trim();
+  s.ketuaNama = document.getElementById('s_ketuaNama').value.trim();
+  s.kepsekLabel = document.getElementById('s_kepsekLabel').value.trim();
+  s.kepsekNama = document.getElementById('s_kepsekNama').value.trim();
+  await saveSettings();
+  showToast('Pengaturan tanda tangan disimpan');
+}
+
+/* ============ INIT ============ */
+(async function(){
+  await loadAll();
+  renderApp();
+})();
+</script>
+</body>
+</html>
